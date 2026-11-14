@@ -9,6 +9,6 @@
 
 namespace qolmod::api
 {
-    GEODE_EVENT_EXPORT(void, enableAntiCheat, (geode::Mod* mod = geode::Mod::get()), (mod));
-    GEODE_EVENT_EXPORT(void, disableAntiCheat, (geode::Mod* mod = geode::Mod::get()), (mod));
+    void enableAntiCheat(geode::Mod* mod = geode::Mod::get());
+    void disableAntiCheat(geode::Mod* mod = geode::Mod::get());
 };
