@@ -1,4 +1,4 @@
-name: Build Geode Mod Nightly
+name: something that totally will not work
 
 on:
   workflow_dispatch:
