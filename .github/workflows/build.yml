@@ -1,4 +1,4 @@
-name: something that totally will not work
+name: Build Geode Mod
 
 on:
   workflow_dispatch:
@@ -8,54 +8,26 @@ on:
 
 jobs:
   build:
-    strategy:
-      fail-fast: false
-      matrix:
-        config:
-        - name: Windows
-          os: windows-latest
-        - name: Android32
-          os: ubuntu-latest
-          target: Android32
-        - name: Android64
-          os: ubuntu-latest
-          target: Android64
-        - name: macOS
-          os: macos-latest
-        - name: iOS
-          os: macos-latest
-          target: iOS        
-
-    name: ${{ matrix.config.name }}
-    runs-on: ${{ matrix.config.os }}
-
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: true
-          fetch-depth: 0
 
-      - name: Build the mod
-        uses: geode-sdk/build-geode-mod@main
-        with:
-          #bindings: 'TheSillyDoggo/bindings'
-          #build-config: 'RelWithDebInfo'
-          build-config: 'Release'
-          export-pdb: true
-          combine: true
-          sdk: 'nightly'
-          target: ${{ matrix.config.target }}
-      
-  package:
-    name: Package builds
-    runs-on: ubuntu-latest
-    needs: ['build']
+      - name: Install Geode CLI & v6.0.0-alpha.1 SDK
+        run: |
+          curl -L https://github.com -o cli.zip
+          unzip cli.zip -d ~/.local/bin
+          chmod +x ~/.local/bin/geode
+          export PATH="$HOME/.local/bin:$PATH"
+          geode config setup --sdk-path ~/geode-sdk
+          git clone --branch v6.0.0-alpha.1 --depth 1 https://github.com ~/geode-sdk
+          geode sdk install-binaries -v v6.0.0-alpha.1
 
-    steps:
-      - uses: geode-sdk/build-geode-mod/combine@main
-        id: build
+      - name: Build Android64
+        env:
+          PATH: /home/runner/.local/bin:${{ env.PATH }}
+        run: geode build --platform android64 --release
 
       - uses: actions/upload-artifact@v4
         with:
-          name: Build Output
-          path: ${{ steps.build.outputs.build-output }}
+          name: Android64
+          path: build/*.geode
