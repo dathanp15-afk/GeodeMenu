@@ -12,14 +12,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Geode SDK
-        uses: geode-sdk/setup-geode@v1
-        with:
-          sdk: v6.0.0-alpha.1
-          bindings: 2.2091
-          target: Android64
+      - name: Install Geode CLI & v6.0.0-alpha.1 SDK
+        run: |
+          mkdir -p ~/.local/bin
+          CLI_URL=$(curl -s https://github.com | grep "browser_download_url.*linux\.zip" | cut -d '"' -f 4)
+          curl -L "$CLI_URL" -o cli.zip
+          unzip cli.zip -d ~/.local/bin
+          chmod +x ~/.local/bin/geode
+          export PATH="$HOME/.local/bin:$PATH"
+          git clone --branch v6.0.0-alpha.1 --depth 1 https://github.com ~/geode-sdk
+          geode config setup --sdk-path ~/geode-sdk
+          geode sdk install-binaries -v v6.0.0-alpha.1
 
       - name: Build Android64
+        env:
+          PATH: /home/runner/.local/bin:${{ env.PATH }}
         run: geode build --platform android64 --release
 
       - uses: actions/upload-artifact@v4
